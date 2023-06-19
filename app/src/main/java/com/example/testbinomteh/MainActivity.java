@@ -17,6 +17,9 @@ import org.osmdroid.config.Configuration;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
+import org.osmdroid.views.overlay.gestures.RotationGestureOverlay;
+import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider;
+import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay;
 
 import java.util.ArrayList;
 
@@ -49,6 +52,13 @@ public class MainActivity extends AppCompatActivity{
         mapController.setZoom(17.0);
         GeoPoint startPoint = new GeoPoint(55.7517, 37.6176);
         mapController.setCenter(startPoint);
+
+        var mRotationGestureOverlay = new RotationGestureOverlay(ctx, map);
+        mRotationGestureOverlay.setEnabled(true);
+        map.setMultiTouchControls(true);
+        map.getOverlays().add(mRotationGestureOverlay);
+
+
     }
 
     @Override
