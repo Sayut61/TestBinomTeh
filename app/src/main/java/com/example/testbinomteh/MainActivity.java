@@ -35,16 +35,14 @@ import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider;
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
     private final int REQUEST_PERMISSIONS_REQUEST_CODE = 1;
     private MapView map = null;
-
-    private ImageView getLocation;
-    private ImageView zoomPlus;
-    private ImageView zoomMinus;
-
     private MyLocationNewOverlay locationOverlay;
+    List<GeoPoint> geoPoints = new ArrayList<>(); // Список всех маркеров
+    private int currentMarkerIndex = 0;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -56,11 +54,16 @@ public class MainActivity extends AppCompatActivity {
         GeoPoint point1 = new GeoPoint(55.753400, 37.612603); // манеж у кремля Моховая улица, 18
         GeoPoint point2 = new GeoPoint(55.749474, 37.613476); // кремль оружейная палата
 
+
+        geoPoints.add(point1);
+        geoPoints.add(point2);
+
         setContentView(R.layout.activity_main);
 
-        getLocation = findViewById(R.id.getLocation);
-        zoomPlus = findViewById(R.id.zoomPlus);
-        zoomMinus = findViewById(R.id.zoomMinus);
+        ImageView getLocation = findViewById(R.id.getLocation);
+        ImageView zoomPlus = findViewById(R.id.zoomPlus);
+        ImageView zoomMinus = findViewById(R.id.zoomMinus);
+        ImageView nextMarker = findViewById(R.id.nextTracker);
 
 
         map = findViewById(R.id.map);
@@ -151,7 +154,6 @@ public class MainActivity extends AppCompatActivity {
         marker1.setOnMarkerClickListener(new Marker.OnMarkerClickListener() {
             @Override
             public boolean onMarkerClick(Marker marker, MapView mapView) {
-                // Обработка клика на маркере 1
                 showBottomSheet(
                         marker.getTitle(),
                         getString(R.string.description1),
@@ -163,14 +165,32 @@ public class MainActivity extends AppCompatActivity {
         marker2.setOnMarkerClickListener(new Marker.OnMarkerClickListener() {
             @Override
             public boolean onMarkerClick(Marker marker, MapView mapView) {
-                // Обработка клика на маркере 2
                 showBottomSheet(
                         marker.getTitle(),
                         getString(R.string.description2),
                         AppCompatResources.getDrawable(ctx, R.drawable.castle));
-                return true; // Возвращаем true, чтобы предотвратить обработку клика по умолчанию (показ всплывающего окна)
+                return true;
             }
         });
+
+        //переход к следующему маркеру
+        nextMarker.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                moveNextMarker(mapController);
+            }
+        });
+    }
+
+    private void moveNextMarker(IMapController mapController) {
+        if (geoPoints != null && geoPoints.size() > 0) {
+            currentMarkerIndex++;
+            if (currentMarkerIndex >= geoPoints.size()) {
+                currentMarkerIndex = 0;
+            }
+            GeoPoint currentMarker = geoPoints.get(currentMarkerIndex);
+            mapController.animateTo(currentMarker);
+        }
     }
 
     private void showBottomSheet(String title, String description, Drawable icon) {
@@ -182,7 +202,7 @@ public class MainActivity extends AppCompatActivity {
         titleTextView.setText(title);
         descriptionTextView.setText(description);
 
-        BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(this);
+        BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(this, R.style.TransparentBottomSheetDialog);
         bottomSheetDialog.setContentView(bottomSheetView);
         bottomSheetDialog.show();
     }

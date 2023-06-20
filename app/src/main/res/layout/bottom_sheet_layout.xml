@@ -27,6 +27,7 @@
         <ImageView
                 android:id="@+id/icon"
                 android:src="@drawable/castle"
+                android:background="@color/white"
                 android:paddingBottom="10dp"
                 android:layout_width="68dp"
                 android:layout_height="68dp" />
