@@ -13,10 +13,14 @@ import android.preference.PreferenceManager;
 import android.util.DisplayMetrics;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.content.res.AppCompatResources;
 import androidx.core.app.ActivityCompat;
+
+import com.google.android.material.bottomsheet.BottomSheetDialog;
 
 import org.osmdroid.api.IMapController;
 import org.osmdroid.config.Configuration;
@@ -131,17 +135,56 @@ public class MainActivity extends AppCompatActivity {
         Marker marker1 = new Marker(map);
         marker1.setPosition(point1);
         marker1.setIcon(customMarkerDrawable2);
+        marker1.setInfoWindow(null);
         marker1.setTitle("Манеж,\nЦентральный выставочный зал ");
 
         Marker marker2 = new Marker(map);
         marker2.setPosition(point2);
         marker2.setIcon(customMarkerDrawable1);
+        marker2.setInfoWindow(null);
         marker2.setTitle("Кремль,\nОужейная палата");
 
         // Добавляем маркеры на карту
         map.getOverlays().add(marker1);
         map.getOverlays().add(marker2);
 
+        marker1.setOnMarkerClickListener(new Marker.OnMarkerClickListener() {
+            @Override
+            public boolean onMarkerClick(Marker marker, MapView mapView) {
+                // Обработка клика на маркере 1
+                showBottomSheet(
+                        marker.getTitle(),
+                        getString(R.string.description1),
+                        AppCompatResources.getDrawable(ctx, R.drawable.home));
+                return true;
+            }
+        });
+
+        marker2.setOnMarkerClickListener(new Marker.OnMarkerClickListener() {
+            @Override
+            public boolean onMarkerClick(Marker marker, MapView mapView) {
+                // Обработка клика на маркере 2
+                showBottomSheet(
+                        marker.getTitle(),
+                        getString(R.string.description2),
+                        AppCompatResources.getDrawable(ctx, R.drawable.castle));
+                return true; // Возвращаем true, чтобы предотвратить обработку клика по умолчанию (показ всплывающего окна)
+            }
+        });
+    }
+
+    private void showBottomSheet(String title, String description, Drawable icon) {
+        View bottomSheetView = getLayoutInflater().inflate(R.layout.bottom_sheet_layout, null);
+        TextView titleTextView = bottomSheetView.findViewById(R.id.title);
+        TextView descriptionTextView = bottomSheetView.findViewById(R.id.description);
+        ImageView iconImageView = bottomSheetView.findViewById(R.id.icon);
+        iconImageView.setImageDrawable(icon);
+        titleTextView.setText(title);
+        descriptionTextView.setText(description);
+
+        BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(this);
+        bottomSheetDialog.setContentView(bottomSheetView);
+        bottomSheetDialog.show();
     }
 
     private Bitmap createBitmapFromView(View view) {
