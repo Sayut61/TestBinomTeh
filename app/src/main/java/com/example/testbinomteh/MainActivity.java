@@ -5,6 +5,9 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.DisplayMetrics;
@@ -21,6 +24,7 @@ import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.CustomZoomButtonsController;
 import org.osmdroid.views.MapView;
+import org.osmdroid.views.overlay.Marker;
 import org.osmdroid.views.overlay.ScaleBarOverlay;
 import org.osmdroid.views.overlay.gestures.RotationGestureOverlay;
 import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider;
@@ -44,6 +48,9 @@ public class MainActivity extends AppCompatActivity {
 
         Context ctx = getApplicationContext();
         Configuration.getInstance().load(ctx, PreferenceManager.getDefaultSharedPreferences(ctx));
+
+        GeoPoint point1 = new GeoPoint(55.753400, 37.612603); // манеж у кремля Моховая улица, 18
+        GeoPoint point2 = new GeoPoint(55.749474, 37.613476); // кремль оружейная палата
 
         setContentView(R.layout.activity_main);
 
@@ -109,14 +116,55 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        //маркеры
+
+        View customMarkerView1 = getLayoutInflater().inflate(R.layout.castle_marker_layout, null);
+        Bitmap customMarkerBitmap1 = createBitmapFromView(customMarkerView1);
+        Bitmap scaledBitmapMarker1 = Bitmap.createScaledBitmap(customMarkerBitmap1, 128, 128, false);
+        Drawable customMarkerDrawable1 = new BitmapDrawable(getResources(), scaledBitmapMarker1);
+
+        View customMarkerView2 = getLayoutInflater().inflate(R.layout.home_marker_layout, null);
+        Bitmap customMarkerBitmap2 = createBitmapFromView(customMarkerView2);
+        Bitmap scaledBitmapMarker2 = Bitmap.createScaledBitmap(customMarkerBitmap2, 128, 128, false);
+        Drawable customMarkerDrawable2 = new BitmapDrawable(getResources(), scaledBitmapMarker2);
+
+        Marker marker1 = new Marker(map);
+        marker1.setPosition(point1);
+        marker1.setIcon(customMarkerDrawable2);
+        marker1.setTitle("Манеж,\nЦентральный выставочный зал ");
+
+        Marker marker2 = new Marker(map);
+        marker2.setPosition(point2);
+        marker2.setIcon(customMarkerDrawable1);
+        marker2.setTitle("Кремль,\nОужейная палата");
+
+        // Добавляем маркеры на карту
+        map.getOverlays().add(marker1);
+        map.getOverlays().add(marker2);
+
+    }
+
+    private Bitmap createBitmapFromView(View view) {
+        // Измерьте размер View
+        view.measure(View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED),
+                View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED));
+        view.layout(0, 0, view.getMeasuredWidth(), view.getMeasuredHeight());
+
+        // Создайте Bitmap и нарисуйте View на нем
+        Bitmap bitmap = Bitmap.createBitmap(view.getMeasuredWidth(), view.getMeasuredHeight(), Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bitmap);
+        view.draw(canvas);
+
+        return bitmap;
     }
 
     private void enableMyLocationOverlay() {
         locationOverlay = new MyLocationNewOverlay(new GpsMyLocationProvider(this), map);
         locationOverlay.enableMyLocation();
         Bitmap iconPerson = BitmapFactory.decodeResource(getResources(), R.drawable.ic_my_tracker_46dp);
-        locationOverlay.setPersonIcon(iconPerson);
-        locationOverlay.setDirectionIcon(iconPerson);
+        Bitmap scaledBitmap = Bitmap.createScaledBitmap(iconPerson, 128, 128, false);
+        locationOverlay.setPersonIcon(scaledBitmap);
+        locationOverlay.setDirectionIcon(scaledBitmap);
         map.getOverlays().add(locationOverlay);
     }
 
