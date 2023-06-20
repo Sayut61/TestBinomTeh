@@ -7,6 +7,7 @@ import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.DisplayMetrics;
+import android.view.View;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -36,28 +37,31 @@ public class MainActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_main);
 
-
         map = findViewById(R.id.map);
         map.setTileSource(TileSourceFactory.MAPNIK);
-
-        map.setBuiltInZoomControls(true);
+        map.setVisibility(View.VISIBLE);
         map.setMultiTouchControls(true);
 
+        //точка на карте по которой строится карта
         IMapController mapController = map.getController();
         mapController.setZoom(17.0);
         GeoPoint startPoint = new GeoPoint(55.7517, 37.6176);
         mapController.setCenter(startPoint);
 
-        var mRotationGestureOverlay = new RotationGestureOverlay(ctx, map);
+        //крутилка карты пальцами
+        var mRotationGestureOverlay = new RotationGestureOverlay(map);
         mRotationGestureOverlay.setEnabled(true);
         map.setMultiTouchControls(true);
         map.getOverlays().add(mRotationGestureOverlay);
 
+        //наложение шкалы масштаба
         final DisplayMetrics dm = ctx.getResources().getDisplayMetrics();
         ScaleBarOverlay mScaleBarOverlay = new ScaleBarOverlay(map);
         mScaleBarOverlay.setCentred(true);
         mScaleBarOverlay.setScaleBarOffset(dm.widthPixels / 2, 10);
         map.getOverlays().add(mScaleBarOverlay);
+
+
     }
 
     @Override
