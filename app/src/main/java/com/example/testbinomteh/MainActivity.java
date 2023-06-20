@@ -40,11 +40,6 @@ public class MainActivity extends AppCompatActivity {
         map = findViewById(R.id.map);
         map.setTileSource(TileSourceFactory.MAPNIK);
 
-        requestPermissionsIfNecessary(new String[]{
-                Manifest.permission.ACCESS_FINE_LOCATION,
-                Manifest.permission.WRITE_EXTERNAL_STORAGE
-        });
-
         map.setBuiltInZoomControls(true);
         map.setMultiTouchControls(true);
 
@@ -68,16 +63,12 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onResume() {
         super.onResume();
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        Configuration.getInstance().load(this, PreferenceManager.getDefaultSharedPreferences(this));
         map.onResume();
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        Configuration.getInstance().save(this, prefs);
         map.onPause();
     }
 
@@ -87,22 +78,6 @@ public class MainActivity extends AppCompatActivity {
         ArrayList<String> permissionsToRequest = new ArrayList<>();
         for (int i = 0; i < grantResults.length; i++) {
             permissionsToRequest.add(permissions[i]);
-        }
-        if (permissionsToRequest.size() > 0) {
-            ActivityCompat.requestPermissions(
-                    this,
-                    permissionsToRequest.toArray(new String[0]),
-                    REQUEST_PERMISSIONS_REQUEST_CODE);
-        }
-    }
-
-    private void requestPermissionsIfNecessary(String[] permissions) {
-        ArrayList<String> permissionsToRequest = new ArrayList<>();
-        for (String permission : permissions) {
-            if (ContextCompat.checkSelfPermission(this, permission)
-                    != PackageManager.PERMISSION_GRANTED) {
-                permissionsToRequest.add(permission);
-            }
         }
         if (permissionsToRequest.size() > 0) {
             ActivityCompat.requestPermissions(
