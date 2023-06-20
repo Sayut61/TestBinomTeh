@@ -2,17 +2,18 @@ package com.example.testbinomteh;
 
 import android.Manifest;
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.DisplayMetrics;
 import android.view.View;
+import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 
 import org.osmdroid.api.IMapController;
 import org.osmdroid.config.Configuration;
@@ -22,12 +23,20 @@ import org.osmdroid.views.CustomZoomButtonsController;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.ScaleBarOverlay;
 import org.osmdroid.views.overlay.gestures.RotationGestureOverlay;
+import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider;
+import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay;
 
 import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
     private final int REQUEST_PERMISSIONS_REQUEST_CODE = 1;
     private MapView map = null;
+
+    private ImageView getLocation;
+    private ImageView zoomPlus;
+    private ImageView zoomMinus;
+
+    private MyLocationNewOverlay locationOverlay;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -37,6 +46,11 @@ public class MainActivity extends AppCompatActivity {
         Configuration.getInstance().load(ctx, PreferenceManager.getDefaultSharedPreferences(ctx));
 
         setContentView(R.layout.activity_main);
+
+        getLocation = findViewById(R.id.getLocation);
+        zoomPlus = findViewById(R.id.zoomPlus);
+        zoomMinus = findViewById(R.id.zoomMinus);
+
 
         map = findViewById(R.id.map);
         map.setTileSource(TileSourceFactory.MAPNIK);
@@ -62,6 +76,48 @@ public class MainActivity extends AppCompatActivity {
         mScaleBarOverlay.setCentred(true);
         mScaleBarOverlay.setScaleBarOffset(dm.widthPixels / 2, 10);
         map.getOverlays().add(mScaleBarOverlay);
+
+        // Если разрешения нет, запрашиваем его у пользователя, если есть, показываем геопозицию
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                    1);
+        } else {
+            enableMyLocationOverlay();
+        }
+        getLocation.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mapController.animateTo(locationOverlay.getMyLocation());
+            }
+        });
+
+        // Zoom карты
+        zoomPlus.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                map.getController().zoomIn();
+            }
+        });
+
+        zoomMinus.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                map.getController().zoomOut();
+            }
+        });
+
+    }
+
+    private void enableMyLocationOverlay() {
+        locationOverlay = new MyLocationNewOverlay(new GpsMyLocationProvider(this), map);
+        locationOverlay.enableMyLocation();
+        Bitmap iconPerson = BitmapFactory.decodeResource(getResources(), R.drawable.ic_my_tracker_46dp);
+        locationOverlay.setPersonIcon(iconPerson);
+        locationOverlay.setDirectionIcon(iconPerson);
+        map.getOverlays().add(locationOverlay);
     }
 
     @Override
@@ -74,6 +130,13 @@ public class MainActivity extends AppCompatActivity {
     public void onPause() {
         super.onPause();
         map.onPause();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        locationOverlay.disableMyLocation();
+        map.onDetach();
     }
 
     @Override
