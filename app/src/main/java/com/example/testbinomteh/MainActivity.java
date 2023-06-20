@@ -18,6 +18,7 @@ import org.osmdroid.api.IMapController;
 import org.osmdroid.config.Configuration;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.GeoPoint;
+import org.osmdroid.views.CustomZoomButtonsController;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.ScaleBarOverlay;
 import org.osmdroid.views.overlay.gestures.RotationGestureOverlay;
@@ -41,6 +42,7 @@ public class MainActivity extends AppCompatActivity {
         map.setTileSource(TileSourceFactory.MAPNIK);
         map.setVisibility(View.VISIBLE);
         map.setMultiTouchControls(true);
+        map.getZoomController().setVisibility(CustomZoomButtonsController.Visibility.NEVER);
 
         //точка на карте по которой строится карта
         IMapController mapController = map.getController();
@@ -60,8 +62,6 @@ public class MainActivity extends AppCompatActivity {
         mScaleBarOverlay.setCentred(true);
         mScaleBarOverlay.setScaleBarOffset(dm.widthPixels / 2, 10);
         map.getOverlays().add(mScaleBarOverlay);
-
-
     }
 
     @Override
